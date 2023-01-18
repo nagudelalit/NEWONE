@@ -1,0 +1,54 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <title>Question Window</title>
+</head>
+<body>
+    <div id="container" style="background-color: aqua; display: flex; flex-direction: column; align-items: center; border: 1px solid black;">
+        <div id="box" style="align-items: center;">
+    <form  onsubmit="sendMessage(event)" id="questionWindow">
+        <h1 style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;font-weight: 800;font-size:30px;">Ask your Question</h1>
+        <span style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;font-weight: 800;font-size:20px;">Question :  </span>   
+        <input type="text" style="padding:5px;  border-radius:5px ;" id="questionText" required>
+        <br>
+        <br><button style="padding:5px 10px; border-radius:5px ;">Send</button>
+    </form>
+</div>
+</div>
+    <ul id='questions'>
+    </ul>
+    <script>
+        // ajax code for api calling to get the username
+        var user;
+        $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:8000/user",
+            success: function (username) {
+                user = username['details'];
+            }
+        });
+
+        ws = new WebSocket('ws://127.0.0.1:8000/ws/question');
+        ws.onmessage = function (event) {
+            // reciving the data from backend
+            var name = JSON.parse(event.data)
+            let messages = document.getElementById('questions')
+            let message = document.createElement('li')
+            let content = document.createTextNode(name['user'] + ": " + name['message'])
+            message.appendChild(content)
+            messages.appendChild(message)
+        };
+        function sendMessage(event) {
+            let input = document.getElementById('questionWindow')['questionText'];
+
+            // user is the variable which is created above 
+            var data = { 'user': user, 'message': input.value }
+            ws.send(JSON.stringify(data));
+            event.preventDefault();
+            
+        }
+    </script>
+</body>
+</html>
